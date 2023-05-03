@@ -121,5 +121,9 @@ public class Controller {
     public static Conta getSelectedConta() {
         return selectedConta;
     }
+    
+    public static Cliente getSelectedCliente(){
+        return selectedCliente;
+    }
 
 }

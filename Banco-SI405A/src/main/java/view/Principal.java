@@ -58,6 +58,7 @@ public class Principal extends javax.swing.JFrame {
 
         //set warning validation
         jLabel17.setText("Você não tem nenhum cliente selecionado para cadastrar uma conta");
+        jLabel18.setText("Selecione uma conta para realizar alguma operação.");
 
         //set disabled account inputs 
         jTextField12.setEnabled(false);
@@ -197,6 +198,7 @@ public class Principal extends javax.swing.JFrame {
         jTextField15 = new javax.swing.JTextField();
         jScrollPane3 = new javax.swing.JScrollPane();
         jTable3 = new javax.swing.JTable();
+        jLabel18 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         jScrollPane4 = new javax.swing.JScrollPane();
         jTable4 = new javax.swing.JTable();
@@ -489,6 +491,9 @@ public class Principal extends javax.swing.JFrame {
         });
         jScrollPane3.setViewportView(jTable3);
 
+        jLabel18.setForeground(new java.awt.Color(255, 0, 0));
+        jLabel18.setText("jLabel18");
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -513,6 +518,9 @@ public class Principal extends javax.swing.JFrame {
                                     .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addComponent(jTextField15)))))
                 .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addComponent(jLabel18, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -525,7 +533,9 @@ public class Principal extends javax.swing.JFrame {
                     .addComponent(jButton3)
                     .addComponent(jButton4)
                     .addComponent(jButton5))
-                .addGap(42, 42, 42)
+                .addGap(20, 20, 20)
+                .addComponent(jLabel18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel16)
                     .addComponent(jTextField15, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -697,6 +707,13 @@ public class Principal extends javax.swing.JFrame {
             modalWarning.show();
             return;
         }
+        
+                
+        if(Controller.getSelectedCliente() == null){
+            modalWarning.setMessage("Nenhum cliente selecionado!");
+            modalWarning.show();
+            return;
+        }
 
         Controller.addCliente(jTextField7.getText(), jTextField8.getText(), jTextField9.getText());
         jTable1.setModel(new ClienteTableModel(Controller.getAllClients()));
@@ -778,7 +795,7 @@ public class Principal extends javax.swing.JFrame {
         jTextField13.setEnabled(true);
     }//GEN-LAST:event_jRadioButton4ActionPerformed
 
-    //selecionar conta para transferencia
+    //selecionar conta destino para transferencia
     private void jTable3MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable3MousePressed
         Controller.setSelectedTransferConta((Conta) ((GenericTableModel) jTable3.getModel()).getItem(jTable3.getSelectedRow()));
     }//GEN-LAST:event_jTable3MousePressed
@@ -788,6 +805,7 @@ public class Principal extends javax.swing.JFrame {
         Controller.setSelectedConta((Conta) ((GenericTableModel) jTable2.getModel()).getItem(jTable2.getSelectedRow()));
 
         jTable4.setModel(new MovimentacaoTableModel(Controller.getMovimentacoesByConta()));
+        jLabel18.setText("");
     }//GEN-LAST:event_jTable2MousePressed
 
     //depósito
@@ -900,6 +918,7 @@ public class Principal extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
