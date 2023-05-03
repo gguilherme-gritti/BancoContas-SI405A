@@ -90,6 +90,10 @@ public class MovimentacaoDAO extends DAO {
     public List retrieveLast() {
         return this.retrieve("SELECT * FROM Movimentacao WHERE id = " + lastId("Movimentacao", "id"));
     }
+    
+    public List retrieveByContaId(int id){
+        return this.retrieve("SELECT * FROM Movimentacao WHERE id_conta = " + id);
+    }
 
     public Movimentacao retrieveById(int id) {
         List<Movimentacao> movimentacoes = this.retrieve("SELECT * FROM Movimentacao WHERE id = " + id);

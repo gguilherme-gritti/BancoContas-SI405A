@@ -33,11 +33,11 @@ public class ContaDAO extends DAO {
             float limite,
             float limite_credito,
             String tipo,
-            String data_aniv
+            int data_aniv
     ) {
         try {
             PreparedStatement stmt;
-            stmt = DAO.getConnection().prepareStatement("INSERT INTO Conta (id_cliente, data_abertura, saldo, limite, limite_credito"
+            stmt = DAO.getConnection().prepareStatement("INSERT INTO Conta (id_cliente, data_abertura, saldo, limite, limite_credito, "
                     + "tipo, data_aniv) VALUES (?,?,?,?,?,?,?)");
             stmt.setInt(1, id_cliente);
             stmt.setString(2, data_abertura);
@@ -45,7 +45,7 @@ public class ContaDAO extends DAO {
             stmt.setFloat(4, limite);
             stmt.setFloat(5, limite_credito);
             stmt.setString(6, tipo);
-            stmt.setString(7, data_aniv);
+            stmt.setInt(7, data_aniv);
             executeUpdate(stmt);
         } catch (SQLException ex) {
             Logger.getLogger(ContaDAO.class.getName()).log(Level.SEVERE, null, ex);
@@ -72,7 +72,7 @@ public class ContaDAO extends DAO {
                     rs.getFloat("limite"),
                     rs.getFloat("limite_credito"),
                     rs.getString("tipo"),
-                    rs.getString("data_aniv")
+                    rs.getInt("data_aniv")
             );
         } catch (SQLException e) {
             System.err.println("Exception: " + e.getMessage());
@@ -104,6 +104,10 @@ public class ContaDAO extends DAO {
     public Conta retrieveById(int id) {
         List<Conta> contas = this.retrieve("SELECT * FROM Conta WHERE id = " + id);
         return (contas.isEmpty() ? null : contas.get(0));
+    }
+    
+    public List retrieveByClienteId(int id){
+        return this.retrieve("SELECT * FROM Conta WHERE id_cliente = " + id);
     }
 
     public void update(Conta conta) {

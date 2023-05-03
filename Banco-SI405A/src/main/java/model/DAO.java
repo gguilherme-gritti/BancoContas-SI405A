@@ -11,7 +11,7 @@ import java.util.logging.Logger;
  */
 public abstract class DAO {
 
-    public static final String DBURL = "jdbc:sqlite:veterinaria-v3.db";
+    public static final String DBURL = "jdbc:sqlite:banco-contas-v2.db";
     private static Connection con;
     protected static SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
@@ -89,7 +89,7 @@ public abstract class DAO {
                     + "limite FLOAT, \n"
                     + "limite_credito FLOAT, \n"
                     + "tipo CHAR, \n"
-                    + "data_nascimento VARCHAR); \n");
+                    + "data_aniv INT); \n");
             executeUpdate(stmt);
             
             stmt = DAO.getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS Movimentacao( \n"

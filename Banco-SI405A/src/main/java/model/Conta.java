@@ -13,7 +13,7 @@ public class Conta {
     private float limite;
     private float limite_credito;
     private String tipo;
-    private String data_aniv;
+    private int data_aniv;
 
     public Conta(
         int id, 
@@ -23,7 +23,7 @@ public class Conta {
         float limite, 
         float limite_credito, 
         String tipo, 
-        String data_aniv
+        int data_aniv
     ) {
         this.id = id;
         this.id_cliente = id_cliente;
@@ -91,11 +91,11 @@ public class Conta {
         this.tipo = tipo;
     }
 
-    public String getData_aniv() {
+    public int getData_aniv() {
         return data_aniv;
     }
 
-    public void setData_aniv(String data_aniv) {
+    public void setData_aniv(int data_aniv) {
         this.data_aniv = data_aniv;
     }
     

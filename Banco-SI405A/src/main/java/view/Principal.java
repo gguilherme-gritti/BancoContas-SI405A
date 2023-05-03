@@ -5,6 +5,8 @@
 package view;
 
 import controller.Controller;
+import model.Cliente;
+import model.Conta;
 
 /**
  *
@@ -15,9 +17,8 @@ public class Principal extends javax.swing.JFrame {
     /**
      * Creates new form Principal
      */
-    
     private Warning modalWarning = null;
-    
+
     public Principal() {
         initComponents();
         initMyComponents();
@@ -33,12 +34,34 @@ public class Principal extends javax.swing.JFrame {
         buttonGroup1.add(jRadioButton1); // conta comum
         buttonGroup1.add(jRadioButton3); // conta especial
         buttonGroup1.add(jRadioButton4); // conta poupança
-        
+
         //config warning modal
         modalWarning = new Warning(this, true);
-        
+
         //get data tables
         jTable1.setModel(new ClienteTableModel(Controller.getAllClients()));
+        jTable2.setModel(new ContaTableModel(Controller.getAllContas()));
+        jTable3.setModel(new ContaTableModel(Controller.getAllContas()));
+        jTable4.setModel(new MovimentacaoTableModel(Controller.getAllMovimentacoes()));
+
+        //set controled textFields
+        Controller.setSelectedHeaders(
+                jTextField1,
+                jTextField2,
+                jTextField3,
+                jTextField4,
+                jTextField5,
+                jTextField6
+        );
+
+        Controller.setSelectedTransfer(jTextField15);
+
+        //set warning validation
+        jLabel17.setText("Você não tem nenhum cliente selecionado para cadastrar uma conta");
+
+        //set disabled account inputs 
+        jTextField12.setEnabled(false);
+        jTextField13.setEnabled(false);
 
     }
 
@@ -68,11 +91,61 @@ public class Principal extends javax.swing.JFrame {
         jTextField14.setText("");
         jTextField15.setText("");
     }
-    
-    private boolean validCliente(){
-        if (jTextField7.getText().isEmpty() || jTextField8.getText().isEmpty() || jTextField9.getText().isEmpty()){
+
+    private boolean validCliente() {
+        if (jTextField7.getText().isEmpty() || jTextField8.getText().isEmpty() || jTextField9.getText().isEmpty()) {
             return false;
         }
+        return true;
+    }
+
+    private boolean validConta() {
+        if (jTextField10.getText().isEmpty() || jTextField11.getText().isEmpty()) {
+            return false;
+        }
+
+        if (jRadioButton3.isSelected() && jTextField12.getText().isEmpty()) {
+            return false;
+        }
+
+        if (jRadioButton4.isSelected() && jTextField13.getText().isEmpty()) {
+            return false;
+        }
+
+        if (!jRadioButton1.isSelected() && !jRadioButton3.isSelected() && !jRadioButton4.isSelected()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean validOperacoes() {
+        Conta conta = Controller.getSelectedConta();
+
+        float valor = Float.parseFloat(jTextField14.getText());
+
+        if (valor > conta.getLimite()) {
+            if (valor > conta.getSaldo() + conta.getLimite_credito()) {
+                modalWarning.setMessage("Valor excedeu o limite de transação");
+                modalWarning.show();
+                return false;
+            }
+        }
+
+        if (conta.getTipo() == "Conta especial") {
+            if (valor > conta.getSaldo() + conta.getLimite_credito()) {
+                modalWarning.setMessage("Não há saldo suficiente para concluir a operação");
+                modalWarning.show();
+                return false;
+            }
+        }
+
+        if (valor > conta.getSaldo()) {
+            modalWarning.setMessage("Não há saldo suficiente para concluir a operação");
+            modalWarning.show();
+            return false;
+        }
+
         return true;
     }
 
@@ -113,6 +186,7 @@ public class Principal extends javax.swing.JFrame {
         jButton2 = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTable2 = new javax.swing.JTable();
+        jLabel17 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel15 = new javax.swing.JLabel();
         jTextField14 = new javax.swing.JTextField();
@@ -167,6 +241,11 @@ public class Principal extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jTable1MousePressed(evt);
+            }
+        });
         jScrollPane1.setViewportView(jTable1);
 
         jLabel10.setText("Data Nascimento");
@@ -188,14 +267,14 @@ public class Principal extends javax.swing.JFrame {
                 .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, 294, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jTextField8))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 548, Short.MAX_VALUE)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(jTextField9, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -227,10 +306,25 @@ public class Principal extends javax.swing.JFrame {
         jTabbedPane1.addTab("Clientes", jPanel1);
 
         jRadioButton1.setText("Conta Comum");
+        jRadioButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jRadioButton1ActionPerformed(evt);
+            }
+        });
 
         jRadioButton3.setText("Conta Especial");
+        jRadioButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jRadioButton3ActionPerformed(evt);
+            }
+        });
 
         jRadioButton4.setText("Conta Poupança");
+        jRadioButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jRadioButton4ActionPerformed(evt);
+            }
+        });
 
         jLabel11.setText("Saldo");
 
@@ -249,6 +343,11 @@ public class Principal extends javax.swing.JFrame {
         jTextField13.setText("jTextField13");
 
         jButton2.setText("Cadastrar");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         jTable2.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -261,7 +360,15 @@ public class Principal extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        jTable2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jTable2MousePressed(evt);
+            }
+        });
         jScrollPane2.setViewportView(jTable2);
+
+        jLabel17.setForeground(new java.awt.Color(255, 0, 0));
+        jLabel17.setText("jLabel17");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -284,8 +391,8 @@ public class Principal extends javax.swing.JFrame {
                                 .addGap(14, 14, 14)
                                 .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(68, 68, 68)
-                                .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(55, 55, 55))
+                                .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jTextField11, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -293,10 +400,14 @@ public class Principal extends javax.swing.JFrame {
                                 .addComponent(jTextField12, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(26, 26, 26)))
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jTextField13, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)))))
+                            .addComponent(jTextField13)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 65, Short.MAX_VALUE))))))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
+                .addContainerGap()
+                .addComponent(jLabel17, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING)
         );
@@ -321,7 +432,9 @@ public class Principal extends javax.swing.JFrame {
                     .addComponent(jTextField12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jTextField13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(jButton2)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton2)
+                    .addComponent(jLabel17))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
                 .addContainerGap())
@@ -341,8 +454,18 @@ public class Principal extends javax.swing.JFrame {
         });
 
         jButton4.setText("Depósito");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
 
         jButton5.setText("Transferência");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
 
         jLabel16.setText("Em caso de transferência, seleciona a conta destino:");
 
@@ -359,6 +482,11 @@ public class Principal extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        jTable3.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jTable3MousePressed(evt);
+            }
+        });
         jScrollPane3.setViewportView(jTable3);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
@@ -419,6 +547,11 @@ public class Principal extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        jTable4.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jTable4MousePressed(evt);
+            }
+        });
         jScrollPane4.setViewportView(jTable4);
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
@@ -531,8 +664,30 @@ public class Principal extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    //saque
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        // TODO add your handling code here:
+
+        if (!validOperacoes()) {
+            return;
+        }
+
+        Conta conta = Controller.getSelectedConta();
+        float valor = Float.parseFloat(jTextField14.getText());
+
+        conta.setSaldo(conta.getSaldo() - valor);
+        Controller.updateConta(conta);
+
+        //adiciona movimentacao
+        Controller.addMovimentacao(conta.getId(), "SAQUE", valor, 0);
+        jTable4.setModel(new MovimentacaoTableModel(Controller.getMovimentacoesByConta()));
+
+        //atualiza tabela de conta pra atualizar saldo
+        jTable2.setModel(new ContaTableModel(Controller.getContasByCliente()));
+
+        //atualiza headers
+        Controller.setSelectedConta(conta);
+
+        clearOperacoes();
     }//GEN-LAST:event_jButton3ActionPerformed
 
     //Cadastro de Cliente
@@ -542,10 +697,157 @@ public class Principal extends javax.swing.JFrame {
             modalWarning.show();
             return;
         }
-        
+
         Controller.addCliente(jTextField7.getText(), jTextField8.getText(), jTextField9.getText());
+        jTable1.setModel(new ClienteTableModel(Controller.getAllClients()));
         clearCliente();
     }//GEN-LAST:event_jButton1ActionPerformed
+
+
+    private void jTable4MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable4MousePressed
+
+    }//GEN-LAST:event_jTable4MousePressed
+
+    //cliente row on click
+    private void jTable1MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable1MousePressed
+        Controller.setSelectedCliente((Cliente) ((GenericTableModel) jTable1.getModel()).getItem(jTable1.getSelectedRow()));
+
+        //clear account warning
+        jLabel17.setText("");
+        jTable2.setModel(new ContaTableModel(Controller.getContasByCliente()));
+
+        //set table contas here
+        //set table movimentacoes here
+    }//GEN-LAST:event_jTable1MousePressed
+
+    //create account
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        if (!validConta()) {
+            modalWarning.setMessage("Campos Obrigatórios não preenchidos!");
+            modalWarning.show();
+            return;
+        }
+
+        float credito = 0;
+        int aniver = 0;
+        String tipo = "Conta comum";
+
+        //jRadioButton3
+        if (jRadioButton3.isSelected()) {
+            credito = Float.parseFloat(jTextField12.getText());
+            tipo = "Conta especial";
+        }
+
+        if (jRadioButton4.isSelected()) {
+            aniver = Integer.parseInt(jTextField13.getText());
+            tipo = "Conta poupança";
+        }
+
+        Controller.addConta(
+                Float.parseFloat(jTextField10.getText()),
+                Float.parseFloat(jTextField11.getText()),
+                credito,
+                tipo,
+                aniver
+        );
+
+        jTable2.setModel(new ContaTableModel(Controller.getContasByCliente()));
+        jTable3.setModel(new ContaTableModel(Controller.getAllContas()));
+        clearContas();
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jRadioButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton1ActionPerformed
+        jTextField12.setEnabled(false);
+        jTextField12.setText("");
+
+        jTextField13.setEnabled(false);
+        jTextField13.setText("");
+    }//GEN-LAST:event_jRadioButton1ActionPerformed
+
+    private void jRadioButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton3ActionPerformed
+        jTextField12.setEnabled(true);
+
+        jTextField13.setEnabled(false);
+        jTextField13.setText("");
+    }//GEN-LAST:event_jRadioButton3ActionPerformed
+
+    private void jRadioButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton4ActionPerformed
+        jTextField12.setEnabled(false);
+        jTextField12.setText("");
+
+        jTextField13.setEnabled(true);
+    }//GEN-LAST:event_jRadioButton4ActionPerformed
+
+    //selecionar conta para transferencia
+    private void jTable3MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable3MousePressed
+        Controller.setSelectedTransferConta((Conta) ((GenericTableModel) jTable3.getModel()).getItem(jTable3.getSelectedRow()));
+    }//GEN-LAST:event_jTable3MousePressed
+
+    //conta selecionada
+    private void jTable2MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable2MousePressed
+        Controller.setSelectedConta((Conta) ((GenericTableModel) jTable2.getModel()).getItem(jTable2.getSelectedRow()));
+
+        jTable4.setModel(new MovimentacaoTableModel(Controller.getMovimentacoesByConta()));
+    }//GEN-LAST:event_jTable2MousePressed
+
+    //depósito
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        Conta conta = Controller.getSelectedConta();
+        float valor = Float.parseFloat(jTextField14.getText());
+
+        conta.setSaldo(conta.getSaldo() + valor);
+        Controller.updateConta(conta);
+
+        //adiciona movimentacao
+        Controller.addMovimentacao(conta.getId(), "DEPOSITO", valor, 0);
+        jTable4.setModel(new MovimentacaoTableModel(Controller.getMovimentacoesByConta()));
+
+        //atualiza tabela de conta pra atualizar saldo
+        jTable2.setModel(new ContaTableModel(Controller.getContasByCliente()));
+
+        //atualiza headers
+        Controller.setSelectedConta(conta);
+
+        clearOperacoes();
+    }//GEN-LAST:event_jButton4ActionPerformed
+
+    //trasnferencia
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+        if (!validOperacoes()) {
+            return;
+        }
+
+        Conta contaDestino = Controller.getSelectedTransferConta();
+
+        if (contaDestino == null) {
+            modalWarning.setMessage("Conta destino não selecionada!");
+            modalWarning.show();
+            return;
+        }
+
+        float valor = Float.parseFloat(jTextField14.getText());
+
+        Conta conta = Controller.getSelectedConta();
+
+        contaDestino.setSaldo(contaDestino.getSaldo() + valor);
+        conta.setSaldo(conta.getSaldo() - valor);
+
+        //atualiza no banco
+        Controller.updateConta(conta);
+        Controller.updateConta(contaDestino);
+
+        //adiciona movimentacao
+        Controller.addMovimentacao(conta.getId(), "TRANSFERENCIA", valor, contaDestino.getId());
+        Controller.addMovimentacao(contaDestino.getId(), "TRANSFERENCIA", valor, conta.getId());
+
+        //atualiza tabelas
+        jTable4.setModel(new MovimentacaoTableModel(Controller.getMovimentacoesByConta()));
+        jTable2.setModel(new ContaTableModel(Controller.getContasByCliente()));
+        
+        //atualiza headers
+        Controller.setSelectedConta(conta);
+        clearOperacoes();
+    }//GEN-LAST:event_jButton5ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -597,6 +899,7 @@ public class Principal extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
