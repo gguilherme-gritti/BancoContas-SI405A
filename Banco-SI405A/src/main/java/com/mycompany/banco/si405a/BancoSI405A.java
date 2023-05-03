@@ -1,5 +1,7 @@
 package com.mycompany.banco.si405a;
 
+import view.Principal;
+
 /**
  *
  * @author GuilhermeGoulartGrit
@@ -7,6 +9,7 @@ package com.mycompany.banco.si405a;
 public class BancoSI405A {
 
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        Principal main = new Principal();
+        main.show();
     }
 }
